@@ -5,3 +5,7 @@ pub struct Request {
     query_string: Option<String>,
     method: Method,
 }
+
+impl Request {
+    fn from_byte_array(buf: &[u8]) -> Self {}
+}
