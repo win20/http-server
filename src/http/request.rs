@@ -9,8 +9,8 @@ use std::str;
 use std::str::Utf8Error;
 
 pub struct Request {
-    path: String,
-    query_string: Option<String>,
+    path: &str,
+    query_string: Option<&str>,
     method: Method,
 }
 
@@ -26,7 +26,7 @@ impl TryFrom<&[u8]> for Request {
         }
 
         let (method, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
-        let (path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         let (protocol, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
 
         if protocol != "HTTP/1.1" {
@@ -35,7 +35,17 @@ impl TryFrom<&[u8]> for Request {
 
         let method: Method = method.parse()?;
 
-        unimplemented!();
+        let mut query_string = None;
+        if let Some(i) = path.find('?') {
+            query_string = Some(&path[i + 1..]);
+            path = &path[..i];
+        }
+
+        Ok(Self {
+            path,
+            query_string,
+            method,
+        })
     }
 }
 
