@@ -8,16 +8,16 @@ use std::fmt::Result as FmtResult;
 use std::str;
 use std::str::Utf8Error;
 
-pub struct Request {
-    path: &str,
-    query_string: Option<&str>,
+pub struct Request<'buf> {
+    path: &'buf str,
+    query_string: Option<&'buf str>,
     method: Method,
 }
 
-impl TryFrom<&[u8]> for Request {
+impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
     type Error = ParseError;
 
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &'buf [u8]) -> Result<Self, Self::Error> {
         let request = str::from_utf8(buf)?;
 
         match get_next_word(request) {
