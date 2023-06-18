@@ -2,6 +2,7 @@ use crate::http::ParseError;
 use crate::http::{Request, Response, StatusCode};
 use std::convert::TryFrom;
 use std::convert::TryInto;
+use std::thread;
 use std::{io::Read, io::Write, net::TcpListener};
 
 pub trait Handler {
@@ -28,28 +29,23 @@ impl Server {
         let listener = TcpListener::bind(&self.addr).unwrap();
 
         for stream in listener.incoming() {
-            match stream {
-                Ok(mut stream) => {
-                    let mut buffer = [0; 1024];
+            let mut stream = stream.unwrap();
+            let mut buffer = [0; 1024];
 
-                    match stream.read(&mut buffer) {
-                        Ok(_) => {
-                            println!("{}", String::from_utf8_lossy(&buffer));
+            match stream.read(&mut buffer) {
+                Ok(_) => {
+                    println!("{}", String::from_utf8_lossy(&buffer));
 
-                            let response = match Request::try_from(&buffer[..]) {
-                                Ok(request) => handler.handle_request(&request),
-                                Err(e) => handler.handle_bad_request(&e),
-                            };
+                    let response = match Request::try_from(&buffer[..]) {
+                        Ok(request) => handler.handle_request(&request),
+                        Err(e) => handler.handle_bad_request(&e),
+                    };
 
-                            if let Err(e) = response.send(&mut stream) {
-                                println!("Failed to send response: {}", e);
-                            }
-                        }
-                        Err(e) => println!("Failed to read from connection: {}", e),
+                    if let Err(e) = response.send(&mut stream) {
+                        println!("Failed to send response: {}", e);
                     }
-                    println!()
                 }
-                Err(e) => println!("Connection failed: {}", e),
+                Err(e) => println!("Failed to read from connection: {}", e),
             }
         }
     }
