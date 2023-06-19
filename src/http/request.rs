@@ -37,13 +37,13 @@ impl<'buf> TryFrom<&'buf [u8]> for Request<'buf> {
         let request = str::from_utf8(buf)?;
 
         match get_next_word(request) {
-            Some((method, request)) => {}
+            Some(_) => {}
             None => return Err(ParseError::InvalidRequest),
         }
 
         let (method, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
         let (mut path, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
-        let (protocol, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
+        let (protocol, _request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
 
         if protocol != "HTTP/1.1" {
             return Err(ParseError::InvalidProtocol);

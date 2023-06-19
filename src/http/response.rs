@@ -1,11 +1,7 @@
 use super::StatusCode;
+use std::io::Result as IoResult;
 use std::io::Write;
-use std::net::TcpStream;
 use std::write;
-use std::{
-    fmt::{Display, Formatter, Result as FmtResult},
-    io::Result as IoResult,
-};
 
 pub struct Response {
     status_code: StatusCode,

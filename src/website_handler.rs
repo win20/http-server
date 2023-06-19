@@ -3,6 +3,7 @@ use super::server::Handler;
 use std::time::Duration;
 use std::{fs, thread};
 
+#[derive(Clone)]
 pub struct WebsiteHandler {
     public_path: String,
 }
