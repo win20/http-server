@@ -5,6 +5,7 @@ use std::env;
 use website_handler::WebsiteHandler;
 
 mod http;
+mod route;
 mod server;
 mod thread_pool;
 mod website_handler;

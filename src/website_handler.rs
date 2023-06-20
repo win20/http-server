@@ -1,3 +1,5 @@
+use crate::route;
+
 use super::http::{Method, Request, Response, StatusCode};
 use super::server::Handler;
 use std::time::Duration;
@@ -32,19 +34,21 @@ impl WebsiteHandler {
 
 impl Handler for WebsiteHandler {
     fn handle_request(&mut self, request: &Request) -> Response {
+        let routes = route::routes();
+
         match request.method() {
-            Method::GET => match request.path() {
-                "/" => Response::new(StatusCode::Ok, self.read_file("index.html")),
-                "/hello" => Response::new(StatusCode::Ok, self.read_file("hello.html")),
-                "/sleep" => {
-                    thread::sleep(Duration::from_secs(5));
-                    Response::new(StatusCode::Ok, self.read_file("hello.html"))
+            Method::GET => {
+                let mut response = Response::new(StatusCode::NotFound, None);
+                for route in routes {
+                    if request.path() == route.path() {
+                        response = Response::new(StatusCode::Ok, self.read_file(route.file()))
+                    } else if request.path() == "/sleep" {
+                        thread::sleep(Duration::from_secs(5));
+                        response = Response::new(StatusCode::Ok, self.read_file(route.file()))
+                    }
                 }
-                path => match self.read_file(path) {
-                    Some(contents) => Response::new(StatusCode::Ok, Some(contents)),
-                    None => Response::new(StatusCode::NotFound, None),
-                },
-            },
+                response
+            }
             _ => Response::new(StatusCode::NotFound, None),
         }
     }
